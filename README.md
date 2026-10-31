@@ -36,9 +36,9 @@ compressed model bundles from `heart.csv`.
 
 ```text
 app.py                  FastAPI endpoints and model loading
-game_ml/data.py         Heart CSV validation and audit
-game_ml/modeling.py     Fold-local preprocessing and five classifiers
-game_ml/reporting.py    Generated JSON metrics and Markdown report
+heart_ml/data.py        Heart CSV validation and audit
+heart_ml/modeling.py    Fold-local preprocessing and five classifiers
+heart_ml/reporting.py   Generated JSON metrics and Markdown report
 train_models.py         Training, evaluation, reports, and model bundles
 heart.csv               Dataset used by training and inference
 static/index.html       Connected frontend and prediction form

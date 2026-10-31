@@ -2,9 +2,9 @@ from pathlib import Path
 
 import joblib
 
-from game_ml.data import load_dataset
-from game_ml.modeling import TECHNIQUES, evaluate_and_train, make_model_bundle
-from game_ml.reporting import write_reports
+from heart_ml.data import load_dataset
+from heart_ml.modeling import TECHNIQUES, evaluate_and_train, make_model_bundle
+from heart_ml.reporting import write_reports
 
 
 ROOT_DIR = Path(__file__).resolve().parent

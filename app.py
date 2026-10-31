@@ -10,8 +10,8 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
-from game_ml.data import FEATURE_COLUMNS, HeartDataset, load_dataset
-from game_ml.modeling import TECHNIQUES
+from heart_ml.data import FEATURE_COLUMNS, HeartDataset, load_dataset
+from heart_ml.modeling import TECHNIQUES
 
 
 ROOT_DIR = Path(__file__).resolve().parent

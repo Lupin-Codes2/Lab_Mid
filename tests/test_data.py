@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
-from game_ml.data import FEATURE_COLUMNS, load_dataset
+from heart_ml.data import FEATURE_COLUMNS, load_dataset
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]

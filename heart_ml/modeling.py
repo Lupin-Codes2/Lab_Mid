@@ -23,7 +23,7 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
-from game_ml.data import (
+from heart_ml.data import (
     CATEGORICAL_COLUMNS,
     FEATURE_COLUMNS,
     NUMERIC_COLUMNS,

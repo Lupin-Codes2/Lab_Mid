@@ -2,8 +2,8 @@ import json
 from pathlib import Path
 from typing import Any
 
-from game_ml.data import CATEGORICAL_COLUMNS, NUMERIC_COLUMNS, HeartDataset
-from game_ml.modeling import MODEL_SETTINGS, TECHNIQUES
+from heart_ml.data import CATEGORICAL_COLUMNS, NUMERIC_COLUMNS, HeartDataset
+from heart_ml.modeling import MODEL_SETTINGS, TECHNIQUES
 
 
 METRICS = (

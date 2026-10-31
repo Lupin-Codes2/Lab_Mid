@@ -6,8 +6,8 @@ from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 
-from game_ml.data import load_dataset
-from game_ml.modeling import TECHNIQUES, build_model
+from heart_ml.data import load_dataset
+from heart_ml.modeling import TECHNIQUES, build_model
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
