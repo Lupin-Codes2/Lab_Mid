@@ -1,3 +1,5 @@
+# To run the links are https://lab-mid.onrender.com/ OR https://lupin-codes2.github.io/Lab_Mid/static/index.html
+
 # Heart Disease Classification Lab
 
 A FastAPI and HTML/CSS/JavaScript project comparing the five classifiers taught before the
