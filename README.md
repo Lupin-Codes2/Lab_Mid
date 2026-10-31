@@ -1,70 +1,57 @@
-# Lab Midterm Machine Learning Project
+# Heart Disease Classification Lab
 
-A FastAPI and HTML/CSS/JavaScript app that compares the five techniques listed before the
-midterm in the **AIC354 Machine Learning Fundamentals lab manual**:
-
-1. Decision Tree
-2. Naive Bayes
-3. K-Nearest Neighbors
-4. Artificial Neural Network (multilayer perceptron)
-5. Support Vector Machine
-
-The project brief requests a suitable dataset, preprocessing, model evaluation, a FastAPI
-backend, a connected frontend, setup instructions, and a brief report. Activities/examples
-from the slides are intentionally excluded as requested. The manual places K-Means, PCA,
-Genetic Algorithms, Bagging, and Reinforcement Learning after the midterm; those techniques
-are not included.
+A FastAPI and HTML/CSS/JavaScript project comparing the five classifiers taught before the
+midterm: Decision Tree, Naive Bayes, K-Nearest Neighbors, Artificial Neural Network (MLP),
+and Support Vector Machine. Later-course techniques and slide activities are not included.
 
 ## Dataset and preprocessing
 
-The included `Top 1000 games of all time.csv` has ranking, game name, year, genre tags, and
-vote count. The task is to classify a game's **first listed genre** using ranking, release
-year, and votes. Game name and genre tags are not model inputs. The app supports searching
-the dataset by game name to fill in those three feature values.
+The project uses the supplied Heart Failure Prediction `heart.csv` at the repository root.
+It contains 918 records, 11 input features, and the binary `HeartDisease` target. The target
+counts in the inspected data are 410 class 0 and 508 class 1. No generated or synthetic
+records are used.
 
-The training pipeline:
+The model pipeline:
 
-- Reads UTF-8 CSV data, parses comma-formatted vote counts and extracts the four-digit year.
-- Skips fully blank, incomplete, and invalid rows with counts recorded in the report.
-- Groups genres with fewer than 15 examples into `Other` to avoid evaluating classes with
-  too little support.
-- Applies `log1p` to votes and standardizes numeric features inside each model pipeline.
-- Randomly oversamples minority classes only within each training fold; validation folds keep
-  the original class distribution.
-- Uses five-fold stratified group cross-validation, grouping duplicate game titles so they
-  cannot appear in both training and validation in a fold.
-- Reports accuracy, balanced accuracy, macro precision/recall/F1, weighted F1, a confusion
-  matrix, and per-class results. The most-frequent-class baseline shows why accuracy alone is
-  misleading on this imbalanced dataset.
+- Validates the expected fields, categorical values, numeric ranges, and binary target.
+- Reports read, usable, blank, incomplete, and invalid row counts.
+- Treats zero `RestingBP` and `Cholesterol` values as missing. Numeric columns are median
+  imputed and standardized; categorical fields are most-frequent-imputed and one-hot encoded.
+- Fits every imputer, scaler, and encoder inside the model pipeline on the training partition
+  only, including each cross-validation fold.
+- Uses five-fold shuffled stratified cross-validation with fixed random state 42. The classes
+  are reasonably balanced, so the models do not use class weights or oversampling.
+- Reports pooled out-of-fold accuracy, balanced accuracy, macro/weighted precision, recall and
+  F1, ROC-AUC, per-class results, confusion matrices, and fold mean ± standard deviation.
+- Compares the required models with a most-frequent-class baseline.
+- Uses documented fixed model settings rather than tuning on evaluation folds: tree depth 5
+  and leaf size 8; GaussianNB defaults; 9 distance-weighted neighbors; an L2-regularized
+  `(24, 12)` MLP with early stopping and a 1,500-iteration limit; and an RBF SVM with
+  `C=1.0` and probability estimates enabled.
 
-The report is generated at `reports/lab_midterm_report.md`; machine-readable metrics are
-written to `reports/model_comparison.json`.
+The reproducible model training command regenerates the JSON comparison, Markdown report, and
+compressed model bundles from `heart.csv`.
 
-The web interface provides a model dropdown for focused predictions or a one-click
-comparison of all five models. Each technique can also be opened from the comparison table
-to review its rationale, tradeoff, and per-genre precision/recall/F1. A checklist on the page
-maps the implementation to the project brief requirements.
-
-## Project structure
+## Project files
 
 ```text
-app.py                  FastAPI endpoints and artifact loading
-game_ml/data.py         CSV parsing, validation, and dataset audit
-game_ml/modeling.py     Preprocessing, five classifiers, and cross-validation
-game_ml/reporting.py    JSON results and brief Markdown report
-train_models.py         Reproducible model-training entry point
-static/index.html       Frontend, game search, prediction, and score comparison
-tests/                  Focused data and model tests
-models/                 Generated model bundles (not committed)
-reports/                Generated brief report and evaluation results
+app.py                  FastAPI endpoints and model loading
+game_ml/data.py         Heart CSV validation and audit
+game_ml/modeling.py     Fold-local preprocessing and five classifiers
+game_ml/reporting.py    Generated JSON metrics and Markdown report
+train_models.py         Training, evaluation, reports, and model bundles
+heart.csv               Dataset used by training and inference
+static/index.html       Connected frontend and prediction form
+tests/                  Data, preprocessing, and model tests
+render.yaml             Existing Render service, build and start configuration
 ```
 
 ## Run locally on Windows
 
-Requires Python 3.10 or newer. From the project directory:
+Requires Python 3.13.5. From the repository directory:
 
 ```powershell
-py -m venv .venv
+py -3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
@@ -74,41 +61,29 @@ uvicorn app:app --reload
 ```
 
 Open <http://127.0.0.1:8000> for the frontend, <http://127.0.0.1:8000/docs> for interactive
-API docs, <http://127.0.0.1:8000/health> for service health, and
-<http://127.0.0.1:8000/report> for the generated report. The API also exposes `/models`,
-`/games?query=last%20of%20us`, and `POST /predict/classification`.
+API docs, <http://127.0.0.1:8000/health> for health, <http://127.0.0.1:8000/models> for
+evaluation JSON, and <http://127.0.0.1:8000/report> for the generated report.
 
-Training must run before starting the API because model bundles and evaluation reports are
-generated locally from the CSV. Render's build command does this automatically.
+`POST /predict/classification` accepts `features` containing the 11 named input fields and
+`technique` set to `all` or one of `decision_tree`, `naive_bayes`, `knn`, `ann`, or `svm`.
+Predictions include the 0/1 estimate, positive-class probability, and class probabilities.
+The service is educational only and must not be used for diagnosis or treatment decisions.
 
-## Deploy the GUI with Render
+## Deploy
 
-The source repository is [Lupin-Codes2/Lab_Mid](https://github.com/Lupin-Codes2/Lab_Mid).
-The frontend is served by FastAPI from the same origin as its API, so the search, prediction,
-and results UI work together after deployment. GitHub Pages is static-only and cannot run this
-Python backend.
+The existing Render service URL remains <https://lab-mid.onrender.com>. Its Blueprint keeps
+the current `app:app` entry point and uses:
 
-1. Push or connect the repository's `main` branch on [Render](https://render.com/).
-2. Choose **New** > **Blueprint**, select `Lupin-Codes2/Lab_Mid`, and apply the service defined
-   in [`render.yaml`](render.yaml).
-3. The Blueprint pins Python 3.13.5, installs `requirements.txt`, trains all models from the
-   included CSV during the build, and starts Uvicorn on Render's `$PORT`.
-4. Open the Render `onrender.com` service URL. The GUI is at `/`, its health check is `/health`,
-   and the interactive API docs are at `/docs`.
+```text
+Build: pip install -r requirements.txt && python train_models.py
+Start: uvicorn app:app --host 0.0.0.0 --port $PORT
+```
 
-The Blueprint uses Render's free web-service plan. Free services can spin down while idle, so
-the first visit after inactivity may take a little longer to respond.
+Training on the Render build is the reliable deployment option: the source CSV and pinned
+requirements are installed with the repository, and model artifacts are generated using the
+same scikit-learn version as the service. This avoids committing machine-specific serialized
+models. A free Render service may spin down while idle, so its first request after inactivity
+can take longer.
 
-## Optional: GitHub Pages frontend
-
-The root `index.html` redirects Pages visitors to `static/index.html`. Pages cannot run
-FastAPI, so deploy the Render Blueprint above first. Then visit the GitHub Pages site, enter
-the Render service's `https://...onrender.com` URL in **Connect the prediction API**, and
-select **Connect API**. The chosen URL is stored in that browser. The FastAPI CORS policy
-allows the `Lupin-Codes2` Pages origin. Alternatively, use the Render service URL directly;
-that serves the GUI and API together without a separate Pages connection.
-
-Model binaries, virtual environments, caches, and course PDFs are excluded from Git. The CSV
-remains in the repository because deployment training and game search require it. Confirm you
-have permission to redistribute the dataset before making the repository public. The prediction
-API has no authentication, so do not add private data without access controls.
+GitHub Pages is an optional static frontend. It uses the same Render API URL, which is
+pre-filled in the connection field. The Pages origin is allowed by the API's CORS settings.

@@ -1,8 +1,9 @@
 from typing import Any
 
 import numpy as np
-from sklearn.base import BaseEstimator, ClassifierMixin, clone
+from sklearn.compose import ColumnTransformer
 from sklearn.dummy import DummyClassifier
+from sklearn.impute import SimpleImputer
 from sklearn.metrics import (
     accuracy_score,
     balanced_accuracy_score,
@@ -11,179 +12,166 @@ from sklearn.metrics import (
     f1_score,
     precision_score,
     recall_score,
+    roc_auc_score,
 )
-from sklearn.model_selection import StratifiedGroupKFold
+from sklearn.model_selection import StratifiedKFold
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import FunctionTransformer, LabelEncoder, StandardScaler
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
-from game_ml.data import GameDataset
+from game_ml.data import (
+    CATEGORICAL_COLUMNS,
+    FEATURE_COLUMNS,
+    NUMERIC_COLUMNS,
+    HeartDataset,
+)
 
 
 RANDOM_STATE = 42
 CV_FOLDS = 5
+NUMERIC_INDICES = [FEATURE_COLUMNS.index(column) for column in NUMERIC_COLUMNS]
+CATEGORICAL_INDICES = [
+    FEATURE_COLUMNS.index(column) for column in CATEGORICAL_COLUMNS
+]
 
 TECHNIQUES = {
     "decision_tree": {
         "name": "Decision Tree",
-        "description": "A bounded-depth tree captures nonlinear feature splits.",
+        "description": "A shallow tree captures threshold-based interactions and is easy to interpret.",
         "why_used": (
-            "The release year, popularity rank, and vote count may separate genres "
-            "through threshold-like interactions. A shallow tree models those splits "
-            "and is straightforward to interpret on tabular data."
+            "A depth-limited decision tree can model nonlinear interactions between "
+            "clinical measurements and encoded symptom categories while keeping its "
+            "decision structure relatively interpretable."
         ),
         "tradeoff": (
-            "Individual trees have high variance; depth and leaf-size limits reduce "
-            "overfitting, but group cross-validation still checks generalization."
+            "A single tree can be unstable and may miss patterns outside its limited "
+            "depth. Its thresholds are educational signals, not clinical rules."
         ),
     },
     "naive_bayes": {
-        "name": "Naive Bayes",
-        "description": "Gaussian Naive Bayes models numeric features per genre.",
+        "name": "Gaussian Naive Bayes",
+        "description": "A probabilistic classifier offers a fast baseline on mixed tabular features.",
         "why_used": (
-            "Gaussian Naive Bayes is a fast probabilistic baseline that naturally "
-            "accepts these numeric predictors and provides a useful contrast with "
-            "boundary-based classifiers."
+            "Gaussian Naive Bayes is a lightweight probabilistic classifier and a "
+            "useful contrast to boundary-based methods. Median imputation, scaling, "
+            "and one-hot encoding make the mixed inputs usable."
         ),
         "tradeoff": (
-            "It assumes features are conditionally independent within each genre. "
-            "Rank and votes both reflect popularity, so this assumption is unlikely "
-            "to hold exactly."
+            "It assumes conditional independence and Gaussian numeric feature "
+            "distributions, assumptions that are unlikely to fully hold for related "
+            "health measurements."
         ),
     },
     "knn": {
         "name": "K-Nearest Neighbors",
-        "description": "Distance-weighted neighbors use scaled numeric features.",
+        "description": "Scaled measurements and one-hot categories let distance-weighted neighbors classify records.",
         "why_used": (
-            "Games with similar ranks, years, and vote counts may have similar "
-            "primary genres. KNN tests this local-similarity idea directly, and "
-            "standardization is essential because it uses distances."
+            "KNN tests whether nearby records in standardized numeric and one-hot "
+            "feature space have similar target outcomes. Scaling is essential so "
+            "large-unit measurements do not dominate distance."
         ),
         "tradeoff": (
-            "Its local decisions are sensitive to class imbalance, the chosen "
-            "neighborhood size, and whether these three fields meaningfully encode "
-            "genre similarity."
+            "Distance can be less meaningful in a mixed, one-hot feature space; "
+            "predictions also depend on neighborhood size and the dataset's sampling."
         ),
     },
     "ann": {
         "name": "Artificial Neural Network",
-        "description": "A regularized multilayer perceptron learns nonlinear patterns.",
+        "description": "A regularized multilayer perceptron learns nonlinear feature interactions.",
         "why_used": (
-            "A compact multilayer perceptron can model nonlinear interactions "
-            "between the numeric inputs and covers the neural-network technique "
-            "listed before the midterm."
+            "A compact, L2-regularized multilayer perceptron can learn nonlinear "
+            "interactions across the encoded categorical and scaled numeric inputs."
         ),
         "tradeoff": (
-            "With only three predictors and about one thousand usable rows, a "
-            "network can overfit or fail to learn stable patterns; regularization "
-            "and grouped cross-validation expose that risk."
+            "With fewer than one thousand records, a neural network can be sensitive "
+            "to initialization and overfit. Cross-validation variation is important "
+            "alongside its average score."
         ),
     },
     "svm": {
         "name": "Support Vector Machine",
-        "description": "An RBF-kernel SVM learns nonlinear class boundaries.",
+        "description": "An RBF-kernel SVM models nonlinear boundaries and provides class probabilities.",
         "why_used": (
-            "An RBF SVM is a standard classifier for small-to-medium numeric "
-            "datasets and can form nonlinear class boundaries after feature scaling."
+            "An RBF-kernel support vector machine is a strong small-tabular-data "
+            "comparison method. It uses scaled and one-hot encoded measurements and "
+            "probability=True enables a probability estimate for the interface."
         ),
         "tradeoff": (
-            "Its predictions depend on kernel and regularization choices, and class "
-            "imbalance can bias decision boundaries even when the features are scaled."
+            "The nonlinear boundary is not directly interpretable, and probability "
+            "estimates are calibrated internally. Cross-validation results do not "
+            "establish clinical usefulness."
         ),
     },
 }
 
+MODEL_SETTINGS = {
+    "decision_tree": {
+        "max_depth": 5,
+        "min_samples_leaf": 8,
+        "random_state": RANDOM_STATE,
+    },
+    "naive_bayes": "GaussianNB defaults",
+    "knn": {"n_neighbors": 9, "weights": "distance"},
+    "ann": {
+        "hidden_layer_sizes": (24, 12),
+        "alpha": 0.05,
+        "max_iter": 1500,
+        "early_stopping": True,
+        "n_iter_no_change": 30,
+        "random_state": RANDOM_STATE,
+    },
+    "svm": {
+        "C": 1.0,
+        "kernel": "rbf",
+        "probability": True,
+        "random_state": RANDOM_STATE,
+    },
+}
 
-def _log_vote_feature_transform(features: np.ndarray) -> np.ndarray:
-    values = np.asarray(features, dtype=float).copy()
-    if values.ndim != 2 or values.shape[1] != 3:
-        raise ValueError("Expected feature columns in ranking, year, votes order.")
-    if np.any(values[:, 2] < 0):
-        raise ValueError("Vote counts must be non-negative.")
-    values[:, 2] = np.log1p(values[:, 2])
-    return values
 
+def build_preprocessor() -> ColumnTransformer:
+    numeric_pipeline = Pipeline(
+        [
+            ("imputer", SimpleImputer(strategy="median")),
+            ("scaler", StandardScaler()),
+        ]
+    )
+    categorical_pipeline = Pipeline(
+        [
+            ("imputer", SimpleImputer(strategy="most_frequent")),
+            ("one_hot", OneHotEncoder(handle_unknown="ignore")),
+        ]
+    )
+    return ColumnTransformer(
+        [
+            ("numeric", numeric_pipeline, NUMERIC_INDICES),
+            ("categorical", categorical_pipeline, CATEGORICAL_INDICES),
+        ],
+        sparse_threshold=0.0,
+    )
 
-class BalancedTrainingClassifier(ClassifierMixin, BaseEstimator):
-    def __init__(self, estimator: Any, random_state: int = RANDOM_STATE) -> None:
-        self.estimator = estimator
-        self.random_state = random_state
-
-    def fit(self, features: np.ndarray, labels: np.ndarray) -> "BalancedTrainingClassifier":
-        values = np.asarray(features)
-        self.target_encoder_ = LabelEncoder().fit(labels)
-        target = self.target_encoder_.transform(labels)
-        classes, counts = np.unique(target, return_counts=True)
-        if len(classes) < 2:
-            raise ValueError("At least two target classes are required for training.")
-
-        rng = np.random.default_rng(self.random_state)
-        balanced_indices = np.concatenate(
-            [
-                rng.choice(
-                    np.flatnonzero(target == label),
-                    size=int(counts.max()),
-                    replace=count < counts.max(),
-                )
-                for label, count in zip(classes, counts)
-            ]
-        )
-        rng.shuffle(balanced_indices)
-        self.estimator_ = clone(self.estimator).fit(
-            values[balanced_indices],
-            target[balanced_indices],
-        )
-        self.classes_ = self.target_encoder_.classes_
-        self.n_features_in_ = values.shape[1]
-        return self
-
-    def predict(self, features: np.ndarray) -> np.ndarray:
-        encoded_predictions = self.estimator_.predict(features)
-        return self.target_encoder_.inverse_transform(encoded_predictions)
 
 def build_model(name: str) -> Pipeline:
     if name not in TECHNIQUES:
         raise ValueError(f"Unknown classifier: {name}")
 
-    estimators = {
+    classifiers = {
         "decision_tree": DecisionTreeClassifier(
-            max_depth=8,
-            min_samples_leaf=4,
-            random_state=RANDOM_STATE,
+            **MODEL_SETTINGS["decision_tree"],
         ),
         "naive_bayes": GaussianNB(),
-        "knn": KNeighborsClassifier(n_neighbors=7, weights="distance"),
-        "ann": MLPClassifier(
-            hidden_layer_sizes=(32, 16),
-            alpha=0.01,
-            max_iter=400,
-            early_stopping=True,
-            random_state=RANDOM_STATE,
-        ),
-        "svm": SVC(
-            C=1.0,
-            kernel="rbf",
-            random_state=RANDOM_STATE,
-        ),
+        "knn": KNeighborsClassifier(**MODEL_SETTINGS["knn"]),
+        "ann": MLPClassifier(**MODEL_SETTINGS["ann"]),
+        "svm": SVC(**MODEL_SETTINGS["svm"]),
     }
     return Pipeline(
         [
-            (
-                "feature_engineering",
-                FunctionTransformer(_log_vote_feature_transform, validate=False),
-            ),
-            ("scaling", StandardScaler()),
-            (
-                "classifier",
-                BalancedTrainingClassifier(
-                    estimator=estimators[name],
-                    random_state=RANDOM_STATE,
-                ),
-            ),
+            ("preprocessing", build_preprocessor()),
+            ("classifier", classifiers[name]),
         ]
     )
 
@@ -191,125 +179,115 @@ def build_model(name: str) -> Pipeline:
 def _metrics(
     actual: np.ndarray,
     predicted: np.ndarray,
-    class_names: list[str],
+    probability_positive: np.ndarray,
 ) -> dict[str, float]:
     return {
         "accuracy": float(accuracy_score(actual, predicted)),
-        "balanced_accuracy": float(
-            balanced_accuracy_score(actual, predicted)
-        ),
+        "balanced_accuracy": float(balanced_accuracy_score(actual, predicted)),
         "precision_macro": float(
-            precision_score(
-                actual,
-                predicted,
-                labels=class_names,
-                average="macro",
-                zero_division=0,
-            )
+            precision_score(actual, predicted, average="macro", zero_division=0)
         ),
         "recall_macro": float(
-            recall_score(
-                actual,
-                predicted,
-                labels=class_names,
-                average="macro",
-                zero_division=0,
-            )
+            recall_score(actual, predicted, average="macro", zero_division=0)
         ),
-        "f1_macro": float(
-            f1_score(
-                actual,
-                predicted,
-                labels=class_names,
-                average="macro",
-                zero_division=0,
-            )
-        ),
+        "f1_macro": float(f1_score(actual, predicted, average="macro", zero_division=0)),
         "f1_weighted": float(
-            f1_score(
-                actual,
-                predicted,
-                labels=class_names,
-                average="weighted",
-                zero_division=0,
-            )
+            f1_score(actual, predicted, average="weighted", zero_division=0)
         ),
+        "roc_auc": float(roc_auc_score(actual, probability_positive)),
     }
 
 
-def _cross_validation_summary(
-    folds: list[dict[str, float]],
-) -> dict[str, dict[str, float]]:
+def _cv_summary(fold_metrics: list[dict[str, float]]) -> dict[str, dict[str, float]]:
     return {
-        metric_name: {
-            "mean": float(np.mean([fold[metric_name] for fold in folds])),
-            "std": float(np.std([fold[metric_name] for fold in folds])),
+        metric: {
+            "mean": float(np.mean([fold[metric] for fold in fold_metrics])),
+            "std": float(np.std([fold[metric] for fold in fold_metrics])),
         }
-        for metric_name in folds[0]
+        for metric in fold_metrics[0]
+    }
+
+
+def _evaluate_estimator(
+    estimator: Any,
+    dataset: HeartDataset,
+    folds: list[tuple[np.ndarray, np.ndarray]],
+) -> dict[str, Any]:
+    out_of_fold_predictions = np.empty_like(dataset.labels)
+    out_of_fold_probabilities = np.empty(len(dataset.labels), dtype=float)
+    fold_metrics: list[dict[str, float]] = []
+
+    for training_indices, validation_indices in folds:
+        model = estimator()
+        model.fit(
+            dataset.features[training_indices],
+            dataset.labels[training_indices],
+        )
+        predictions = model.predict(dataset.features[validation_indices])
+        positive_index = list(model.classes_).index(1)
+        probabilities = model.predict_proba(
+            dataset.features[validation_indices]
+        )[:, positive_index]
+        out_of_fold_predictions[validation_indices] = predictions
+        out_of_fold_probabilities[validation_indices] = probabilities
+        fold_metrics.append(
+            _metrics(
+                dataset.labels[validation_indices],
+                predictions,
+                probabilities,
+            )
+        )
+
+    return {
+        "out_of_fold_metrics": _metrics(
+            dataset.labels,
+            out_of_fold_predictions,
+            out_of_fold_probabilities,
+        ),
+        "cross_validation_mean_std": _cv_summary(fold_metrics),
+        "confusion_matrix": confusion_matrix(
+            dataset.labels,
+            out_of_fold_predictions,
+            labels=[0, 1],
+        ).tolist(),
+        "classification_report": classification_report(
+            dataset.labels,
+            out_of_fold_predictions,
+            labels=[0, 1],
+            output_dict=True,
+            zero_division=0,
+        ),
     }
 
 
 def evaluate_and_train(
-    dataset: GameDataset,
+    dataset: HeartDataset,
 ) -> tuple[dict[str, Any], dict[str, Pipeline]]:
-    class_names = sorted(np.unique(dataset.labels).tolist())
-    splitter = StratifiedGroupKFold(
+    splitter = StratifiedKFold(
         n_splits=CV_FOLDS,
         shuffle=True,
         random_state=RANDOM_STATE,
     )
-    fold_indices = list(
-        splitter.split(dataset.features, dataset.labels, groups=dataset.groups)
-    )
+    folds = list(splitter.split(dataset.features, dataset.labels))
     results: dict[str, Any] = {}
-    trained_models: dict[str, Pipeline] = {}
 
-    baseline_predictions = np.empty_like(dataset.labels)
-    baseline_folds: list[dict[str, float]] = []
-    for training_indices, validation_indices in fold_indices:
-        baseline = DummyClassifier(strategy="most_frequent")
-        baseline.fit(
-            dataset.features[training_indices],
-            dataset.labels[training_indices],
-        )
-        predictions = baseline.predict(dataset.features[validation_indices])
-        baseline_predictions[validation_indices] = predictions
-        baseline_folds.append(
-            _metrics(
-                dataset.labels[validation_indices],
-                predictions,
-                class_names,
-            )
-        )
+    baseline_result = _evaluate_estimator(
+        lambda: DummyClassifier(strategy="most_frequent"),
+        dataset,
+        folds,
+    )
     results["baseline"] = {
         "name": "Most-frequent baseline",
-        "cross_validation_mean_std": _cross_validation_summary(baseline_folds),
-        "out_of_fold_metrics": _metrics(
-            dataset.labels,
-            baseline_predictions,
-            class_names,
-        ),
+        **baseline_result,
     }
 
+    trained_models: dict[str, Pipeline] = {}
     for model_key, technique in TECHNIQUES.items():
-        out_of_fold_predictions = np.empty_like(dataset.labels)
-        fold_metrics: list[dict[str, float]] = []
-        for training_indices, validation_indices in fold_indices:
-            model = build_model(model_key)
-            model.fit(
-                dataset.features[training_indices],
-                dataset.labels[training_indices],
-            )
-            predictions = model.predict(dataset.features[validation_indices])
-            out_of_fold_predictions[validation_indices] = predictions
-            fold_metrics.append(
-                _metrics(
-                    dataset.labels[validation_indices],
-                    predictions,
-                    class_names,
-                )
-            )
-
+        result = _evaluate_estimator(
+            lambda key=model_key: build_model(key),
+            dataset,
+            folds,
+        )
         final_model = build_model(model_key)
         final_model.fit(dataset.features, dataset.labels)
         trained_models[model_key] = final_model
@@ -318,37 +296,22 @@ def evaluate_and_train(
             "description": technique["description"],
             "why_used": technique["why_used"],
             "tradeoff": technique["tradeoff"],
-            "cross_validation_mean_std": _cross_validation_summary(fold_metrics),
-            "out_of_fold_metrics": _metrics(
-                dataset.labels,
-                out_of_fold_predictions,
-                class_names,
-            ),
-            "confusion_matrix": confusion_matrix(
-                dataset.labels,
-                out_of_fold_predictions,
-                labels=class_names,
-            ).tolist(),
-            "classification_report": classification_report(
-                dataset.labels,
-                out_of_fold_predictions,
-                labels=class_names,
-                target_names=class_names,
-                output_dict=True,
-                zero_division=0,
-            ),
+            **result,
         }
 
     results["evaluation"] = {
-        "method": "5-fold stratified group cross-validation",
+        "method": "5-fold stratified cross-validation",
         "folds": CV_FOLDS,
-        "grouped_by": "case-insensitive game title",
         "random_state": RANDOM_STATE,
-        "training_imbalance_handling": (
-            "Random oversampling of minority genres within each training fold only."
-        ),
-        "class_names": class_names,
+        "class_names": {"0": "No heart disease", "1": "Heart disease"},
         "primary_metric": "f1_macro",
+        "feature_columns": list(FEATURE_COLUMNS),
+        "model_settings": MODEL_SETTINGS,
+        "preprocessing": (
+            "Median imputation for numeric values, standard scaling for numeric "
+            "features, and most-frequent imputation plus one-hot encoding for "
+            "categorical features. All transformations are fitted within each fold."
+        ),
     }
     return results, trained_models
 
@@ -357,7 +320,6 @@ def make_model_bundle(
     model_key: str,
     model: Pipeline,
     result: dict[str, Any],
-    dataset: GameDataset,
 ) -> dict[str, Any]:
     return {
         "model_key": model_key,
@@ -365,11 +327,12 @@ def make_model_bundle(
         "why_used": TECHNIQUES[model_key]["why_used"],
         "tradeoff": TECHNIQUES[model_key]["tradeoff"],
         "estimator": model,
-        "feature_names": list(("ranking", "year", "votes")),
-        "class_names": sorted(np.unique(dataset.labels).tolist()),
+        "feature_names": list(FEATURE_COLUMNS),
         "metrics": result["out_of_fold_metrics"],
+        "cross_validation_mean_std": result["cross_validation_mean_std"],
+        "confusion_matrix": result["confusion_matrix"],
         "per_class_metrics": {
             class_name: result["classification_report"][class_name]
-            for class_name in sorted(np.unique(dataset.labels).tolist())
+            for class_name in ("0", "1")
         },
     }

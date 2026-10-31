@@ -1,1 +1,1 @@
-"""Data preparation and modeling for the midterm game-genre project."""
+"""Data preparation and modeling for the heart-disease classification lab."""

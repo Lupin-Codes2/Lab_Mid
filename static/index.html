@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#111a2e">
-    <title>Game Genre Lab | Model Studio</title>
+    <title>Heart Disease Classification Lab</title>
     <style>
       :root {
         color-scheme: light;
@@ -24,7 +24,6 @@
       body { margin: 0; min-width: 320px; }
       button, input, select { font: inherit; }
       a { color: var(--blue); }
-
       .hero {
         padding: 2rem max(1.25rem, calc((100% - 1120px) / 2)) 2.4rem;
         color: white;
@@ -32,7 +31,6 @@
           radial-gradient(ellipse at 82% 0%, #3656a9 0, transparent 37%),
           linear-gradient(128deg, #111a2e, #182544);
       }
-
       .hero-inner, main { max-width: 1120px; margin: 0 auto; }
       .eyebrow {
         margin: 0 0 0.6rem;
@@ -42,18 +40,9 @@
         letter-spacing: 0.15em;
         text-transform: uppercase;
       }
-
       h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.045em; }
-      .hero-copy { max-width: 650px; margin: 0.8rem 0 0; color: #d3daf0; line-height: 1.65; }
+      .hero-copy { max-width: 740px; margin: 0.8rem 0 0; color: #d3daf0; line-height: 1.65; }
       main { padding: 1.35rem 1rem 4rem; }
-      .connection-panel { display: flex; align-items: flex-end; gap: 0.8rem; }
-      .connection-panel label { flex: 1; }
-      .connection-panel .button { flex: 0 0 auto; }
-      .connection-status { min-height: 1.3rem; margin: 0.55rem 0 0; font-size: 0.82rem; }
-      .api-url-hint { display: flex; align-items: center; flex-wrap: wrap; gap: 0.55rem; margin: 0.8rem 0 0; color: var(--muted); font-size: 0.82rem; }
-      .api-url-hint code { padding: 0.28rem 0.45rem; border: 1px solid var(--line); border-radius: 6px; background: #f5f7fb; color: var(--ink); }
-      .copy-api-button { padding: 0.35rem 0.6rem; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); background: white; font: inherit; font-weight: 650; cursor: pointer; }
-
       .panel {
         margin: 1rem 0;
         padding: clamp(1.05rem, 3vw, 1.5rem);
@@ -62,7 +51,6 @@
         background: white;
         box-shadow: 0 5px 22px #1f2c4508;
       }
-
       .section-heading {
         display: flex;
         align-items: flex-start;
@@ -70,41 +58,26 @@
         gap: 1rem;
         margin-bottom: 1rem;
       }
-
       h2 { margin: 0; font-size: 1.2rem; letter-spacing: -0.02em; }
       h3 { margin: 0; font-size: 1rem; }
       p { line-height: 1.55; }
-      .muted, .section-description { color: var(--muted); }
+      .muted, .section-description, .footer-note { color: var(--muted); }
       .section-description { margin: 0.35rem 0 0; font-size: 0.92rem; }
+      .connection-panel { display: flex; align-items: flex-end; gap: 0.8rem; }
+      .connection-panel label { flex: 1; }
+      .connection-panel .button { flex: 0 0 auto; }
+      .connection-status { min-height: 1.3rem; margin: 0.55rem 0 0; font-size: 0.82rem; }
+      .api-url-hint { display: flex; align-items: center; flex-wrap: wrap; gap: 0.55rem; margin: 0.8rem 0 0; color: var(--muted); font-size: 0.82rem; }
+      .api-url-hint code { padding: 0.28rem 0.45rem; border: 1px solid var(--line); border-radius: 6px; background: #f5f7fb; color: var(--ink); }
+      .copy-api-button { padding: 0.35rem 0.6rem; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); background: white; font: inherit; font-weight: 650; cursor: pointer; }
       .report-link { flex: 0 0 auto; font-size: 0.9rem; font-weight: 650; }
-
-      .stat-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 0.7rem;
-        margin: 1rem 0;
-      }
-
-      .stat {
-        padding: 0.8rem;
-        border: 1px solid var(--line);
-        border-radius: 11px;
-        background: #fafbfe;
-      }
-
-      .stat-value { display: block; font-size: 1.35rem; font-weight: 750; letter-spacing: -0.04em; }
+      .stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.7rem; margin: 1rem 0; }
+      .stat { padding: 0.8rem; border: 1px solid var(--line); border-radius: 11px; background: #fafbfe; }
+      .stat-value { display: block; font-size: 1.25rem; font-weight: 750; letter-spacing: -0.04em; }
       .stat-label { display: block; margin-top: 0.2rem; color: var(--muted); font-size: 0.78rem; }
-      .genre-tags { display: flex; flex-wrap: wrap; gap: 0.45rem; }
-      .tag {
-        padding: 0.32rem 0.65rem;
-        border: 1px solid #e1e8fc;
-        border-radius: 999px;
-        color: #334577;
-        background: #f3f6ff;
-        font-size: 0.82rem;
-      }
-
-      .fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.85rem; }
+      .class-tags { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+      .tag { padding: 0.32rem 0.65rem; border: 1px solid #e1e8fc; border-radius: 999px; color: #334577; background: #f3f6ff; font-size: 0.82rem; }
+      .feature-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.85rem; }
       label { display: grid; gap: 0.42rem; color: #38435a; font-size: 0.86rem; font-weight: 650; }
       input, select {
         width: 100%;
@@ -113,28 +86,12 @@
         border: 1px solid #d5dbe6;
         border-radius: 9px;
         color: var(--ink);
-        background: #fff;
+        background: white;
       }
-
       input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible {
         outline: 3px solid #9aafff;
         outline-offset: 2px;
       }
-
-      .search-label { max-width: 540px; }
-      .game-results { display: grid; gap: 0.45rem; margin-top: 0.65rem; }
-      .game-results button {
-        padding: 0.7rem 0.85rem;
-        border: 1px solid var(--line);
-        border-radius: 9px;
-        color: #263757;
-        background: #f8faff;
-        text-align: left;
-        cursor: pointer;
-      }
-
-      .game-results button:hover { border-color: #9fb3ff; background: #f1f5ff; }
-      .search-status, output { display: block; min-height: 1.35rem; margin: 0.7rem 0 0; font-size: 0.88rem; }
       .toolbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; }
       .toolbar .technique-picker { width: min(100%, 340px); }
       .button {
@@ -147,7 +104,6 @@
         font-weight: 700;
         cursor: pointer;
       }
-
       .button:hover { background: #244bd0; }
       .run-row { display: flex; align-items: center; gap: 0.85rem; margin-top: 1rem; }
       .run-row .muted { margin: 0; font-size: 0.84rem; }
@@ -156,87 +112,35 @@
       table { width: 100%; border-collapse: collapse; }
       th, td { padding: 0.72rem 0.65rem; border-bottom: 1px solid var(--line); text-align: left; }
       th { color: #64708a; background: #f8f9fc; font-size: 0.75rem; font-weight: 700; }
-      td { font-size: 0.88rem; }
+      td { font-size: 0.86rem; }
       tbody tr:last-child td { border-bottom: 0; }
       .best-row td:first-child { color: var(--green); font-weight: 750; }
-      .table-action {
-        padding: 0.35rem 0.6rem;
-        border: 1px solid #dce4fb;
-        border-radius: 7px;
-        color: var(--blue);
-        background: #f5f7ff;
-        font-size: 0.8rem;
-        font-weight: 700;
-        cursor: pointer;
-      }
-
-      .table-action:hover { border-color: #9fb3ff; background: #edf1ff; }
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        min-height: 24px;
-        padding: 0.18rem 0.55rem;
-        border-radius: 999px;
-        color: #087653;
-        background: #e8f7f1;
-        font-size: 0.75rem;
-        font-weight: 750;
-      }
-
+      .table-action { padding: 0.35rem 0.6rem; border: 1px solid #dce4fb; border-radius: 7px; color: var(--blue); background: #f5f7ff; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+      .badge { display: inline-flex; align-items: center; min-height: 24px; padding: 0.18rem 0.55rem; border-radius: 999px; color: #087653; background: #e8f7f1; font-size: 0.75rem; font-weight: 750; }
       .detail-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 1rem; margin-top: 1rem; }
       .detail-card { padding: 1rem; border: 1px solid var(--line); border-radius: 12px; background: #fbfcff; }
-      .class-metrics { margin-top: 1rem; }
       .detail-card p { margin: 0.45rem 0 0; color: #4c5870; font-size: 0.9rem; }
-      .detail-card .detail-label { color: var(--muted); font-size: 0.74rem; font-weight: 750; letter-spacing: 0.08em; text-transform: uppercase; }
-      .score-row { display: grid; grid-template-columns: 145px 1fr 42px; align-items: center; gap: 0.65rem; margin-top: 0.75rem; }
-      .score-label { color: #4c5870; font-size: 0.82rem; }
-      .score-track { height: 9px; overflow: hidden; border-radius: 999px; background: #e9edf4; }
-      .score-bar { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #416af0, #7a8fff); }
-      .score-value { text-align: right; font-size: 0.82rem; font-variant-numeric: tabular-nums; }
+      .detail-label { color: var(--muted); font-size: 0.74rem; font-weight: 750; letter-spacing: 0.08em; text-transform: uppercase; }
+      .class-metrics { margin-top: 1rem; }
       .takeaway { margin: 1rem 0 0; padding: 0.85rem 1rem; border-left: 3px solid #718afa; border-radius: 0 8px 8px 0; background: #f5f7ff; font-size: 0.9rem; }
-
+      .footer-note { padding: 0.25rem 0.35rem; font-size: 0.82rem; }
       .requirements-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.7rem; }
-      .requirement {
-        display: flex;
-        gap: 0.65rem;
-        padding: 0.85rem;
-        border: 1px solid var(--line);
-        border-radius: 11px;
-        background: #fbfcff;
-      }
-
-      .check {
-        display: grid;
-        flex: 0 0 23px;
-        width: 23px;
-        height: 23px;
-        place-items: center;
-        border-radius: 50%;
-        color: #087653;
-        background: #e8f7f1;
-        font-size: 0.8rem;
-        font-weight: 800;
-      }
-
+      .requirement { display: flex; gap: 0.65rem; padding: 0.85rem; border: 1px solid var(--line); border-radius: 11px; background: #fbfcff; }
+      .check { display: grid; flex: 0 0 23px; width: 23px; height: 23px; place-items: center; border-radius: 50%; color: #087653; background: #e8f7f1; font-size: 0.8rem; font-weight: 800; }
       .requirement strong { display: block; font-size: 0.84rem; }
       .requirement span:last-child { display: block; margin-top: 0.25rem; color: var(--muted); font-size: 0.78rem; line-height: 1.4; }
       .requirement-status { margin: 0.9rem 0 0; color: #087653; font-size: 0.85rem; font-weight: 650; }
-      .footer-note { padding: 0.25rem 0.35rem; color: var(--muted); font-size: 0.82rem; }
-
+      output { display: block; min-height: 1.35rem; margin: 0.7rem 0 0; font-size: 0.88rem; }
       @media (max-width: 720px) {
-        .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .requirements-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .stat-grid, .requirements-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .detail-grid { grid-template-columns: 1fr; }
       }
-
       @media (max-width: 540px) {
         .hero { padding-top: 1.5rem; }
         .section-heading, .toolbar, .run-row { align-items: stretch; flex-direction: column; }
         .connection-panel { align-items: stretch; flex-direction: column; }
-        .fields, .requirements-grid { grid-template-columns: 1fr; }
-        .toolbar .technique-picker { width: 100%; }
-        .run-row .button { width: 100%; }
-        .score-row { grid-template-columns: 118px 1fr 40px; }
+        .feature-grid, .requirements-grid { grid-template-columns: 1fr; }
+        .toolbar .technique-picker, .run-row .button { width: 100%; }
       }
     </style>
   </head>
@@ -244,34 +148,33 @@
     <header class="hero">
       <div class="hero-inner">
         <p class="eyebrow">Machine Learning · Project Lab</p>
-        <h1>Game Genre Model Studio</h1>
+        <h1>Heart Disease Classification Lab</h1>
         <p class="hero-copy">
-          Explore how five classification techniques interpret the same game data.
-          Compare their cross-validation results, inspect their tradeoffs, and test a prediction.
+          Compare five pre-midterm classifiers on a mixed clinical tabular dataset.
+          Explore held-out evaluation results and try educational model estimates.
         </p>
       </div>
     </header>
 
     <main>
-      <section id="connection-panel" class="panel" aria-labelledby="connection-heading">
+      <section class="panel" aria-labelledby="connection-heading">
         <div class="section-heading">
           <div>
             <h2 id="connection-heading">Connect the prediction API</h2>
             <p class="section-description">
-              GitHub Pages hosts this interface; connect the FastAPI service URL to load metrics,
-              search games, and run predictions.
+              The frontend uses the deployed FastAPI service to load results and make predictions.
             </p>
           </div>
         </div>
         <div class="connection-panel">
           <label for="api-base-url">FastAPI service URL
             <input id="api-base-url" type="url" inputmode="url"
-                   placeholder="https://your-service.onrender.com">
+                   placeholder="https://lab-mid.onrender.com">
           </label>
           <button id="connect-api" class="button" type="button">Connect API</button>
         </div>
         <p class="api-url-hint">
-          Use this project API URL:
+          Project API URL:
           <code id="project-api-url">https://lab-mid.onrender.com</code>
           <button id="copy-api-url" class="copy-api-button" type="button">Copy URL</button>
         </p>
@@ -282,38 +185,20 @@
         <div class="section-heading">
           <div>
             <h2 id="data-heading">Dataset overview</h2>
-            <p class="section-description">A quick audit of the cleaned game records used in training.</p>
+            <p class="section-description">
+              Dataset audit and target distribution from the exact records used in training.
+            </p>
           </div>
           <a class="report-link" href="/report">Open project report ↗</a>
         </div>
-        <div id="dataset-summary" class="stat-grid" aria-live="polite">
-          <div class="stat"><span class="stat-value">—</span><span class="stat-label">Usable records</span></div>
-          <div class="stat"><span class="stat-value">—</span><span class="stat-label">Rows checked</span></div>
-          <div class="stat"><span class="stat-value">—</span><span class="stat-label">Years covered</span></div>
-          <div class="stat"><span class="stat-value">—</span><span class="stat-label">Rows excluded</span></div>
-        </div>
+        <div id="dataset-summary" class="stat-grid" aria-live="polite"></div>
         <p id="dataset-quality-note" class="footer-note"></p>
-        <p class="section-description">Primary genre classes</p>
-        <div id="genre-counts" class="genre-tags" aria-label="Genre class counts"></div>
+        <p class="section-description">HeartDisease target counts</p>
+        <div id="class-counts" class="class-tags" aria-label="Target class counts"></div>
         <p class="footer-note">
-          Incomplete rows are excluded; rare genres are grouped as Other. Votes are log-transformed,
-          numeric inputs standardized, and class balancing is applied only within training folds.
+          Zero RestingBP and Cholesterol values are treated as missing and median-imputed
+          inside each training fold. Clinical data and estimates are for education only.
         </p>
-      </section>
-
-      <section class="panel" aria-labelledby="search-heading">
-        <div class="section-heading">
-          <div>
-            <h2 id="search-heading">Try a game</h2>
-            <p class="section-description">Search the dataset to fill in its model inputs.</p>
-          </div>
-        </div>
-        <label class="search-label">Game title
-          <input id="game-search" type="search" minlength="2" autocomplete="off"
-                 placeholder="For example, The Last of Us">
-        </label>
-        <div id="game-results" class="game-results" aria-live="polite"></div>
-        <p id="search-status" class="search-status muted" aria-live="polite"></p>
       </section>
 
       <section class="panel" aria-labelledby="predict-heading">
@@ -321,7 +206,7 @@
           <div>
             <h2 id="predict-heading">Explore a technique</h2>
             <p class="section-description">
-              Choose one classifier for a focused prediction, or run the full comparison.
+              Enter the 11 dataset features, choose one model, or compare all five estimates.
             </p>
           </div>
         </div>
@@ -333,35 +218,63 @@
               </select>
             </label>
           </div>
-          <div class="fields">
-            <label>Ranking
-              <input name="ranking" type="number" min="1" max="1000" step="1" value="1" required>
+          <div class="feature-grid">
+            <label>Age (years)
+              <input name="Age" type="number" min="18" max="120" step="1" value="54" required>
             </label>
-            <label>Release year
-              <input name="year" type="number" min="1950" max="2030" step="1" value="2013" required>
+            <label>Sex
+              <select name="Sex" required><option value="M">Male (M)</option><option value="F">Female (F)</option></select>
             </label>
-            <label>Votes
-              <input name="votes" type="number" min="0" max="10000000" step="1"
-                     value="63580" required>
+            <label>Chest pain type
+              <select name="ChestPainType" required>
+                <option value="ASY">ASY</option><option value="ATA">ATA</option>
+                <option value="NAP">NAP</option><option value="TA">TA</option>
+              </select>
+            </label>
+            <label>Resting blood pressure (mm Hg; 0 = missing)
+              <input name="RestingBP" type="number" min="0" max="300" step="1" value="130" required>
+            </label>
+            <label>Cholesterol (mg/dL; 0 = missing)
+              <input name="Cholesterol" type="number" min="0" max="1000" step="1" value="230" required>
+            </label>
+            <label>Fasting blood sugar &gt; 120 mg/dL
+              <select name="FastingBS" required><option value="0">No (0)</option><option value="1">Yes (1)</option></select>
+            </label>
+            <label>Resting ECG
+              <select name="RestingECG" required>
+                <option value="Normal">Normal</option><option value="LVH">LVH</option><option value="ST">ST</option>
+              </select>
+            </label>
+            <label>Maximum heart rate (bpm)
+              <input name="MaxHR" type="number" min="1" max="250" step="1" value="150" required>
+            </label>
+            <label>Exercise-induced angina
+              <select name="ExerciseAngina" required><option value="N">No (N)</option><option value="Y">Yes (Y)</option></select>
+            </label>
+            <label>Oldpeak (ST depression)
+              <input name="Oldpeak" type="number" min="-10" max="20" step="0.1" value="0" required>
+            </label>
+            <label>ST slope
+              <select name="ST_Slope" required>
+                <option value="Up">Up</option><option value="Flat">Flat</option><option value="Down">Down</option>
+              </select>
             </label>
           </div>
           <div class="run-row">
-            <button id="predict-button" class="button" type="submit">Compare all techniques</button>
-            <p class="muted">Same inputs, selected model(s), no hidden changes to the data.</p>
+            <button id="predict-button" class="button" type="submit">Compare all five</button>
+            <p class="muted">Outputs are model estimates, not diagnoses or medical advice.</p>
           </div>
         </form>
         <output id="prediction-status" aria-live="polite"></output>
         <div id="prediction-results" hidden>
           <div class="table-wrap">
             <table id="prediction-table">
-              <thead>
-                <tr>
-                  <th scope="col">Technique</th>
-                  <th scope="col">Predicted genre</th>
-                  <th scope="col">CV macro F1</th>
-                  <th scope="col">CV balanced accuracy</th>
-                </tr>
-              </thead>
+              <thead><tr>
+                <th scope="col">Technique</th>
+                <th scope="col">Predicted class</th>
+                <th scope="col">P(heart disease = 1)</th>
+                <th scope="col">Confidence in predicted class</th>
+              </tr></thead>
               <tbody></tbody>
             </table>
           </div>
@@ -376,18 +289,27 @@
             </article>
           </div>
           <div class="detail-card class-metrics">
-            <h3>Per-genre cross-validation</h3>
+            <h3>Per-class cross-validation metrics</h3>
             <div class="table-wrap">
               <table id="class-metrics-table">
-                <thead>
-                  <tr>
-                    <th scope="col">Genre</th>
-                    <th scope="col">Precision</th>
-                    <th scope="col">Recall</th>
-                    <th scope="col">F1</th>
-                    <th scope="col">Support</th>
-                  </tr>
-                </thead>
+                <thead><tr>
+                  <th scope="col">Class</th><th scope="col">Precision</th>
+                  <th scope="col">Recall</th><th scope="col">F1</th><th scope="col">Support</th>
+                </tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <h3 style="margin-top: 1.1rem">Fold mean ± standard deviation</h3>
+            <div class="table-wrap">
+              <table id="fold-metrics-table">
+                <thead><tr><th scope="col">Metric</th><th scope="col">Mean</th><th scope="col">SD</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <h3 style="margin-top: 1.1rem">Pooled out-of-fold confusion matrix</h3>
+            <div class="table-wrap">
+              <table id="confusion-matrix-table">
+                <thead><tr><th scope="col">Actual \ predicted</th><th scope="col">No heart disease</th><th scope="col">Heart disease</th></tr></thead>
                 <tbody></tbody>
               </table>
             </div>
@@ -401,89 +323,69 @@
           <div>
             <h2 id="comparison-heading">Compare and analyze</h2>
             <p class="section-description">
-              Five-fold out-of-fold evaluation against a most-frequent-class baseline.
-              Macro averages give each genre equal weight; select any model row to inspect its rationale.
+              Pooled out-of-fold metrics plus cross-validation macro F1 mean ± standard deviation.
+              Select Analyze to inspect a model's rationale and per-class results.
             </p>
           </div>
           <span id="cv-badge" class="badge">Evaluation</span>
         </div>
         <div class="table-wrap">
           <table id="metrics-table">
-            <thead>
-              <tr>
-                <th scope="col">Technique</th>
-                <th scope="col">Accuracy</th>
-                <th scope="col">Balanced accuracy</th>
-                <th scope="col">Macro precision</th>
-                <th scope="col">Macro recall</th>
-                <th scope="col">Macro F1</th>
-                <th scope="col">Weighted F1</th>
-                <th scope="col">Details</th>
-              </tr>
-            </thead>
+            <thead><tr>
+              <th scope="col">Technique</th><th scope="col">Accuracy</th>
+              <th scope="col">Balanced accuracy</th><th scope="col">Macro precision</th>
+              <th scope="col">Macro recall</th><th scope="col">Macro F1</th>
+              <th scope="col">Weighted F1</th><th scope="col">ROC-AUC</th>
+              <th scope="col">CV macro F1 mean ± SD</th><th scope="col">Details</th>
+            </tr></thead>
             <tbody></tbody>
           </table>
         </div>
         <div id="score-analysis" class="detail-grid" aria-live="polite"></div>
-        <p class="footer-note">
-          The highlighted method has the highest macro F1. Use each row's Analyze button
-          to see that method's rationale, tradeoffs, and per-genre results.
-        </p>
       </section>
 
       <section class="panel" aria-labelledby="requirements-heading">
         <div class="section-heading">
           <div>
             <h2 id="requirements-heading">Project requirements</h2>
-            <p class="section-description">A direct check against the midterm project brief.</p>
+            <p class="section-description">A check against the required project components.</p>
           </div>
           <span class="badge">6 of 6 covered</span>
         </div>
         <div class="requirements-grid">
-          <div class="requirement"><span class="check" aria-hidden="true">✓</span><div><strong>Dataset selected and inspected</strong><span>Game CSV audited; usable and skipped rows are reported.</span></div></div>
-          <div class="requirement"><span class="check" aria-hidden="true">✓</span><div><strong>Preprocessing applied</strong><span>Incomplete rows, rare classes, vote skew, scaling, and imbalance are handled.</span></div></div>
-          <div class="requirement"><span class="check" aria-hidden="true">✓</span><div><strong>Required techniques applied</strong><span>All five pre-midterm classifiers are trained and selectable.</span></div></div>
-          <div class="requirement"><span class="check" aria-hidden="true">✓</span><div><strong>Results evaluated and presented</strong><span>Grouped five-fold metrics, baseline, and per-genre scores are shown.</span></div></div>
-          <div class="requirement"><span class="check" aria-hidden="true">✓</span><div><strong>FastAPI and connected frontend</strong><span>Search, model selection, prediction, evaluation, and report endpoints are wired.</span></div></div>
-          <div class="requirement"><span class="check" aria-hidden="true">✓</span><div><strong>Source, setup, and brief report</strong><span>Run instructions are documented and the report is available to open.</span></div></div>
+          <div class="requirement"><span class="check" aria-hidden="true">✓</span><div><strong>Suitable dataset inspected</strong><span>918 records, mixed feature types, binary target and class counts audited.</span></div></div>
+          <div class="requirement"><span class="check" aria-hidden="true">✓</span><div><strong>Leakage-aware preprocessing</strong><span>Fold-local median imputation, scaling and categorical one-hot encoding.</span></div></div>
+          <div class="requirement"><span class="check" aria-hidden="true">✓</span><div><strong>Five required techniques</strong><span>Decision Tree, Naive Bayes, KNN, MLP neural network and RBF SVM.</span></div></div>
+          <div class="requirement"><span class="check" aria-hidden="true">✓</span><div><strong>Evaluation and comparison</strong><span>Stratified CV, baseline, ROC-AUC, per-class results and confusion matrices.</span></div></div>
+          <div class="requirement"><span class="check" aria-hidden="true">✓</span><div><strong>FastAPI and connected interface</strong><span>Model metrics, validated predictions, health and report endpoints.</span></div></div>
+          <div class="requirement"><span class="check" aria-hidden="true">✓</span><div><strong>Reproducible report and setup</strong><span>Run instructions and measured model results are generated from training.</span></div></div>
         </div>
-        <p class="requirement-status">The listed project requirements are covered by this implementation.</p>
+        <p class="requirement-status">
+          Educational use only: this model is not validated for diagnosis or treatment decisions.
+        </p>
       </section>
     </main>
 
     <script>
-      const searchInput = document.querySelector("#game-search");
-      const searchResults = document.querySelector("#game-results");
-      const searchStatus = document.querySelector("#search-status");
-      const predictionForm = document.querySelector("#classification-form");
-      const predictionStatus = document.querySelector("#prediction-status");
-      const techniqueSelect = document.querySelector("#technique-select");
-      const predictionButton = document.querySelector("#predict-button");
-      const predictionResults = document.querySelector("#prediction-results");
+      const DEFAULT_API_BASE = "https://lab-mid.onrender.com";
       const apiBaseInput = document.querySelector("#api-base-url");
       const connectionStatus = document.querySelector("#connection-status");
-      const isGithubPages = location.hostname.endsWith("github.io");
-      const savedApiBase = localStorage.getItem("gameGenreApiBase") || "";
-      apiBaseInput.value = savedApiBase;
-      let searchTimer;
-      let searchController;
+      const predictionForm = document.querySelector("#classification-form");
+      const predictionStatus = document.querySelector("#prediction-status");
+      const predictionResults = document.querySelector("#prediction-results");
+      const techniqueSelect = document.querySelector("#technique-select");
+      const predictionButton = document.querySelector("#predict-button");
+      const numericFields = new Set([
+        "Age", "RestingBP", "Cholesterol", "FastingBS", "MaxHR", "Oldpeak",
+      ]);
+      const classNames = { "0": "No heart disease", "1": "Heart disease" };
+      apiBaseInput.value = localStorage.getItem("heartDiseaseApiBase") || DEFAULT_API_BASE;
       let modelReport;
 
-      function getApiBase() {
-        return (localStorage.getItem("gameGenreApiBase") || "").replace(/\/+$/, "");
-      }
-
       function apiUrl(path) {
-        const base = getApiBase();
-        return base ? `${base}${path}` : path;
-      }
-
-      function requireApiConnection() {
-        if (isGithubPages && !getApiBase()) {
-          throw new Error(
-            "GitHub Pages only serves the interface. Deploy the Render Blueprint and connect its service URL above."
-          );
-        }
+        const base = (localStorage.getItem("heartDiseaseApiBase") || DEFAULT_API_BASE)
+          .replace(/\/+$/, "");
+        return `${base}${path}`;
       }
 
       function addCell(row, value) {
@@ -492,276 +394,213 @@
         row.append(cell);
       }
 
-      function showError(element, error) {
-        element.textContent = error.message || "The request failed.";
-        element.classList.add("error");
-      }
-
-      function makeTableRow(name, metrics, bestModel) {
-        const row = document.createElement("tr");
-        if (name === bestModel) row.classList.add("best-row");
-        addCell(row, name);
-        for (const metric of [
-          "accuracy", "balanced_accuracy", "precision_macro",
-          "recall_macro", "f1_macro", "f1_weighted",
-        ]) {
-          addCell(row, metrics[metric].toFixed(3));
-        }
-        return row;
-      }
-
-      function buildScoreAnalysis(report, orderedModels) {
-        const container = document.querySelector("#score-analysis");
-        const baseline = report.baseline.out_of_fold_metrics;
-        const strongestMacro = orderedModels.reduce((best, model) =>
-          model.out_of_fold_metrics.f1_macro > best.out_of_fold_metrics.f1_macro
-            ? model : best
-        );
-        const strongestBalanced = orderedModels.reduce((best, model) =>
-          model.out_of_fold_metrics.balanced_accuracy > best.out_of_fold_metrics.balanced_accuracy
-            ? model : best
-        );
-        const summaries = [
-          {
-            title: "Best macro F1",
-            value: strongestMacro,
-            detail: `${strongestMacro.out_of_fold_metrics.f1_macro.toFixed(3)} macro F1 vs ` +
-              `${baseline.f1_macro.toFixed(3)} for the majority baseline. This is the best ` +
-              "overall balance of precision and recall across genres.",
-          },
-          {
-            title: "Best balanced accuracy",
-            value: strongestBalanced,
-            detail: `${strongestBalanced.out_of_fold_metrics.balanced_accuracy.toFixed(3)} ` +
-              "mean recall across genres. This can differ from the macro-F1 winner because " +
-              "balanced accuracy does not account for precision.",
-          },
-        ];
-        container.replaceChildren();
-        for (const summary of summaries) {
-          const card = document.createElement("article");
-          card.className = "detail-card";
-          const heading = document.createElement("h3");
-          heading.textContent = summary.title;
-          const description = document.createElement("p");
-          description.textContent = `${summary.value.name}: ${summary.detail}`;
-          card.append(heading, description);
-          container.append(card);
-        }
-      }
-
-      async function loadModelComparison() {
-        const status = document.querySelector("#cv-badge");
-        status.textContent = "Loading…";
-        try {
-          requireApiConnection();
-          const response = await fetch(apiUrl("/models"));
-          if (!response.ok) throw new Error("Model evaluation is unavailable.");
-          modelReport = await response.json();
-          connectionStatus.classList.remove("error");
-          connectionStatus.textContent = `Connected to ${getApiBase() || location.origin}.`;
-          const reportLink = document.querySelector(".report-link");
-          reportLink.href = apiUrl("/report");
-          const audit = modelReport.dataset;
-
-          const datasetSummary = document.querySelector("#dataset-summary");
-          datasetSummary.replaceChildren();
-          const stats = [
-            [audit.rows_usable.toLocaleString(), "Usable records"],
-            [audit.rows_read.toLocaleString(), "Rows checked"],
-            [`${audit.year_range[0]}–${audit.year_range[1]}`, "Years covered"],
-            [
-              (
-                audit.rows_skipped_blank
-                + audit.rows_skipped_incomplete
-                + audit.rows_skipped_invalid
-              ).toLocaleString(),
-              "Rows excluded",
-            ],
-          ];
-          for (const [value, label] of stats) {
-            const card = document.createElement("div");
-            card.className = "stat";
-            const number = document.createElement("span");
-            number.className = "stat-value";
-            number.textContent = value;
-            const caption = document.createElement("span");
-            caption.className = "stat-label";
-            caption.textContent = label;
-            card.append(number, caption);
-            datasetSummary.append(card);
-          }
-
-          const genreCounts = document.querySelector("#genre-counts");
-          genreCounts.replaceChildren();
-          for (const [genre, count] of Object.entries(audit.grouped_genre_counts)) {
-            const tag = document.createElement("span");
-            tag.className = "tag";
-            tag.textContent = `${genre} · ${count}`;
-            genreCounts.append(tag);
-          }
-          document.querySelector("#dataset-quality-note").textContent =
-            `${audit.rows_skipped_blank} blank, ${audit.rows_skipped_incomplete} incomplete, ` +
-            `${audit.rows_skipped_invalid} invalid rows excluded. ` +
-            `${audit.duplicate_title_rows} repeated-title rows are kept as distinct ranked games ` +
-            "but grouped into the same cross-validation fold.";
-
-          const orderedModels = Object.entries(modelReport.models).map(([key, result]) => ({
-            key,
-            ...result,
-          }));
-          const tableBody = document.querySelector("#metrics-table tbody");
-          tableBody.replaceChildren();
-          techniqueSelect.replaceChildren(techniqueSelect.querySelector('option[value="all"]'));
-          const baselineRow = makeTableRow(
-            modelReport.baseline.name,
-            modelReport.baseline.out_of_fold_metrics,
-            ""
-          );
-          baselineRow.append(document.createElement("td"));
-          tableBody.append(baselineRow);
-          for (const model of orderedModels) {
-            const option = document.createElement("option");
-            option.value = model.key;
-            option.textContent = model.name;
-            techniqueSelect.append(option);
-            const row = makeTableRow(
-              model.name,
-              model.out_of_fold_metrics,
-              strongestModel(orderedModels).name
-            );
-            const detailsCell = document.createElement("td");
-            const detailsButton = document.createElement("button");
-            detailsButton.type = "button";
-            detailsButton.className = "table-action";
-            detailsButton.dataset.technique = model.key;
-            detailsButton.textContent = "Analyze";
-            detailsButton.setAttribute("aria-label", `Analyze ${model.name}`);
-            detailsCell.append(detailsButton);
-            row.append(detailsCell);
-            tableBody.append(row);
-          }
-          status.textContent =
-            `${modelReport.evaluation.folds}-fold grouped CV · ` +
-            `${modelReport.evaluation.primary_metric.replace("_", " ")} focus`;
-          buildScoreAnalysis(modelReport, orderedModels);
-          updatePredictionButton();
-        } catch (error) {
-          status.textContent = "Evaluation unavailable";
-          status.classList.add("error");
-          connectionStatus.classList.add("error");
-          connectionStatus.textContent = error.message ||
-            "Could not connect to the API. Check the service URL and CORS settings.";
-          showError(predictionStatus, error);
-        }
-      }
-
-      function strongestModel(models) {
-        return models.reduce((best, model) =>
-          model.out_of_fold_metrics.f1_macro > best.out_of_fold_metrics.f1_macro
-            ? model : best
-        );
-      }
-
-      function updatePredictionButton() {
+      function updatePredictButton() {
         const selected = techniqueSelect.selectedOptions[0]?.textContent || "technique";
         predictionButton.textContent = techniqueSelect.value === "all"
-          ? "Compare all techniques"
+          ? "Compare all five"
           : `Run ${selected}`;
       }
 
+      function makeTableRow(name, metrics, bestModel, cvSummary) {
+        const row = document.createElement("tr");
+        if (name === bestModel) row.classList.add("best-row");
+        addCell(row, name);
+        for (const key of [
+          "accuracy", "balanced_accuracy", "precision_macro",
+          "recall_macro", "f1_macro", "f1_weighted", "roc_auc",
+        ]) {
+          addCell(row, Number(metrics[key]).toFixed(3));
+        }
+        addCell(row, `${cvSummary.f1_macro.mean.toFixed(3)} ± ${cvSummary.f1_macro.std.toFixed(3)}`);
+        return row;
+      }
+
+      function makeScoreCard(title, model, metric, baselineValue) {
+        const card = document.createElement("article");
+        card.className = "detail-card";
+        const heading = document.createElement("h3");
+        heading.textContent = title;
+        const description = document.createElement("p");
+        const values = model.out_of_fold_metrics;
+        description.textContent =
+          `${model.name}: ${values[metric].toFixed(3)} pooled out-of-fold; ` +
+          `majority baseline ${baselineValue.toFixed(3)}.`;
+        card.append(heading, description);
+        return card;
+      }
+
+      async function loadModelComparison(base = null) {
+        const apiBase = (base || localStorage.getItem("heartDiseaseApiBase") || DEFAULT_API_BASE)
+          .replace(/\/+$/, "");
+        const response = await fetch(`${apiBase}/models`);
+        if (!response.ok) throw new Error(`Could not load evaluation results (HTTP ${response.status}).`);
+        modelReport = await response.json();
+        const audit = modelReport.dataset;
+
+        const stats = [
+          [audit.rows_usable.toLocaleString(), "Usable records"],
+          [audit.rows_read.toLocaleString(), "Rows read"],
+          [audit.feature_count, "Input features"],
+          [Object.keys(audit.target_counts).length, "Target classes"],
+        ];
+        const summary = document.querySelector("#dataset-summary");
+        summary.replaceChildren();
+        for (const [value, label] of stats) {
+          const card = document.createElement("div");
+          card.className = "stat";
+          const number = document.createElement("span");
+          number.className = "stat-value";
+          number.textContent = value;
+          const caption = document.createElement("span");
+          caption.className = "stat-label";
+          caption.textContent = label;
+          card.append(number, caption);
+          summary.append(card);
+        }
+        const imputed = audit.missing_values_imputed;
+        document.querySelector("#dataset-quality-note").textContent =
+          `${audit.rows_skipped_blank} blank, ${audit.rows_skipped_incomplete} incomplete, ` +
+          `${audit.rows_skipped_invalid} invalid records excluded. Missing-value sentinels ` +
+          `found: RestingBP ${imputed.RestingBP}, Cholesterol ${imputed.Cholesterol}; ` +
+          "median values are fitted in training folds only.";
+        const classCounts = document.querySelector("#class-counts");
+        classCounts.replaceChildren();
+        for (const [label, count] of Object.entries(audit.target_counts)) {
+          const tag = document.createElement("span");
+          tag.className = "tag";
+          tag.textContent = `${classNames[label]} · ${count}`;
+          classCounts.append(tag);
+        }
+
+        const models = Object.entries(modelReport.models).map(([key, result]) => ({
+          key, ...result,
+        }));
+        const bestModel = models.reduce((best, model) =>
+          model.out_of_fold_metrics.f1_macro > best.out_of_fold_metrics.f1_macro
+            ? model : best
+        );
+        const tableBody = document.querySelector("#metrics-table tbody");
+        tableBody.replaceChildren();
+        techniqueSelect.replaceChildren(techniqueSelect.querySelector('option[value="all"]'));
+        const baseline = modelReport.baseline;
+        const baselineRow = makeTableRow(
+          baseline.name,
+          baseline.out_of_fold_metrics,
+          "",
+          baseline.cross_validation_mean_std
+        );
+        baselineRow.append(document.createElement("td"));
+        tableBody.append(baselineRow);
+        for (const model of models) {
+          const option = document.createElement("option");
+          option.value = model.key;
+          option.textContent = model.name;
+          techniqueSelect.append(option);
+          const row = makeTableRow(
+            model.name,
+            model.out_of_fold_metrics,
+            bestModel.name,
+            model.cross_validation_mean_std
+          );
+          const detailsCell = document.createElement("td");
+          const detailsButton = document.createElement("button");
+          detailsButton.type = "button";
+          detailsButton.className = "table-action";
+          detailsButton.dataset.technique = model.key;
+          detailsButton.textContent = "Analyze";
+          detailsButton.setAttribute("aria-label", `Analyze ${model.name}`);
+          detailsCell.append(detailsButton);
+          row.append(detailsCell);
+          tableBody.append(row);
+        }
+        document.querySelector("#cv-badge").textContent =
+          `${modelReport.evaluation.folds}-fold stratified CV`;
+        const analysis = document.querySelector("#score-analysis");
+        analysis.replaceChildren(
+          makeScoreCard(
+            "Highest macro F1",
+            bestModel,
+            "f1_macro",
+            baseline.out_of_fold_metrics.f1_macro
+          ),
+          makeScoreCard(
+            "Highest ROC-AUC",
+            models.reduce((best, model) =>
+              model.out_of_fold_metrics.roc_auc > best.out_of_fold_metrics.roc_auc
+                ? model : best
+            ),
+            "roc_auc",
+            baseline.out_of_fold_metrics.roc_auc
+          )
+        );
+        document.querySelector(".report-link").href = `${apiBase}/report`;
+        localStorage.setItem("heartDiseaseApiBase", apiBase);
+        connectionStatus.classList.remove("error");
+        connectionStatus.textContent = `Connected to ${new URL(`${apiBase}/`).origin}.`;
+        updatePredictButton();
+      }
+
       function renderTechniqueAnalysis(items) {
-        const selected = techniqueSelect.value;
-        const focus = selected === "all"
+        const focus = techniqueSelect.value === "all"
           ? items.reduce((best, item) =>
             item.metrics.f1_macro > best.metrics.f1_macro ? item : best
           )
           : items[0];
         document.querySelector("#technique-rationale").textContent = focus.why_used;
         document.querySelector("#technique-tradeoff").textContent = focus.tradeoff;
-
         const classMetrics = document.querySelector("#class-metrics-table tbody");
         classMetrics.replaceChildren();
-        for (const [genre, metrics] of Object.entries(focus.per_class_metrics)) {
+        for (const label of ["0", "1"]) {
+          const metrics = focus.per_class_metrics[label];
           const row = document.createElement("tr");
-          addCell(row, genre);
+          addCell(row, classNames[label]);
           addCell(row, Number(metrics.precision).toFixed(3));
           addCell(row, Number(metrics.recall).toFixed(3));
           addCell(row, Number(metrics["f1-score"]).toFixed(3));
           addCell(row, Number(metrics.support).toLocaleString());
           classMetrics.append(row);
         }
-
-        const macroF1 = focus.metrics.f1_macro;
-        const baselineF1 = modelReport.baseline.out_of_fold_metrics.f1_macro;
-        let interpretation;
-        if (macroF1 > baselineF1) {
-          interpretation = `${focus.name} is above the majority baseline on macro F1 by ` +
-            `${(macroF1 - baselineF1).toFixed(3)}. It is the strongest tested model only if ` +
-            "its minority-genre scores are acceptable for your use case.";
-        } else {
-          interpretation = `${focus.name} does not beat the majority baseline on macro F1 ` +
-            `(${macroF1.toFixed(3)} vs ${baselineF1.toFixed(3)}). Treat this result as a ` +
-            "useful technique comparison, not a dependable genre predictor.";
+        const foldMetrics = document.querySelector("#fold-metrics-table tbody");
+        foldMetrics.replaceChildren();
+        const metricLabels = {
+          accuracy: "Accuracy",
+          balanced_accuracy: "Balanced accuracy",
+          precision_macro: "Macro precision",
+          recall_macro: "Macro recall",
+          f1_macro: "Macro F1",
+          f1_weighted: "Weighted F1",
+          roc_auc: "ROC-AUC",
+        };
+        for (const [metric, values] of Object.entries(focus.cross_validation_mean_std)) {
+          const row = document.createElement("tr");
+          addCell(row, metricLabels[metric] || metric);
+          addCell(row, Number(values.mean).toFixed(3));
+          addCell(row, Number(values.std).toFixed(3));
+          foldMetrics.append(row);
         }
-        document.querySelector("#analysis-takeaway").textContent = interpretation;
+        const confusionBody = document.querySelector("#confusion-matrix-table tbody");
+        confusionBody.replaceChildren();
+        for (const [index, label] of ["0", "1"].entries()) {
+          const row = document.createElement("tr");
+          addCell(row, classNames[label]);
+          addCell(row, Number(focus.confusion_matrix[index][0]).toLocaleString());
+          addCell(row, Number(focus.confusion_matrix[index][1]).toLocaleString());
+          confusionBody.append(row);
+        }
+        document.querySelector("#analysis-takeaway").textContent =
+          `Selected analysis: ${focus.name}; its pooled out-of-fold macro F1 is ` +
+          `${focus.metrics.f1_macro.toFixed(3)}. Compare recall for both classes and ` +
+          "the confusion matrix in the report; probability estimates are not diagnoses.";
       }
 
-      searchInput.addEventListener("input", () => {
-        clearTimeout(searchTimer);
-        if (searchController) searchController.abort();
-        searchResults.replaceChildren();
-        searchStatus.classList.remove("error");
-        const query = searchInput.value.trim();
-        if (query.length < 2) {
-          searchStatus.textContent = "";
-          return;
-        }
-
-        searchStatus.textContent = "Searching…";
-        searchTimer = setTimeout(async () => {
-          searchController = new AbortController();
-          try {
-            const response = await fetch(
-                apiUrl(`/games?query=${encodeURIComponent(query)}`),
-              { signal: searchController.signal }
-            );
-            if (!response.ok) throw new Error("Game search is unavailable.");
-            const games = await response.json();
-            searchResults.replaceChildren();
-            for (const game of games) {
-              const button = document.createElement("button");
-              button.type = "button";
-              button.textContent = `${game.name} · ${game.year} · Rank ${game.ranking} · ` +
-                `${game.votes.toLocaleString()} votes`;
-              button.addEventListener("click", () => {
-                predictionForm.elements.ranking.value = game.ranking;
-                predictionForm.elements.year.value = game.year;
-                predictionForm.elements.votes.value = game.votes;
-                searchStatus.textContent = `${game.name} selected.`;
-                searchResults.replaceChildren();
-              });
-              searchResults.append(button);
-            }
-            searchStatus.textContent = games.length
-              ? "Choose a result to fill the model inputs."
-              : "No matching games found.";
-          } catch (error) {
-            if (error.name !== "AbortError") showError(searchStatus, error);
-          }
-        }, 200);
-      });
-
-      techniqueSelect.addEventListener("change", updatePredictionButton);
-
       document.querySelector("#copy-api-url").addEventListener("click", async () => {
-        const apiUrl = document.querySelector("#project-api-url").textContent.trim();
-        apiBaseInput.value = apiUrl;
+        const apiUrlValue = document.querySelector("#project-api-url").textContent.trim();
+        apiBaseInput.value = apiUrlValue;
         try {
-          await navigator.clipboard.writeText(apiUrl);
+          await navigator.clipboard.writeText(apiUrlValue);
           connectionStatus.classList.remove("error");
           connectionStatus.textContent = "API URL copied and filled in above. Click Connect API.";
-        } catch (error) {
+        } catch {
           connectionStatus.classList.remove("error");
           connectionStatus.textContent =
             "API URL filled in above. Copy it manually if needed, then click Connect API.";
@@ -769,37 +608,27 @@
       });
 
       document.querySelector("#connect-api").addEventListener("click", async () => {
-        const apiBase = apiBaseInput.value.trim().replace(/\/+$/, "");
-        if (!apiBase) {
-          localStorage.removeItem("gameGenreApiBase");
-          connectionStatus.classList.remove("error");
-          connectionStatus.textContent = isGithubPages
-            ? "Enter the FastAPI service URL from your Render dashboard."
-            : "Using the API served by this site.";
-          if (!isGithubPages) await loadModelComparison();
-          return;
-        }
+        const candidate = apiBaseInput.value.trim().replace(/\/+$/, "");
         try {
-          const parsedUrl = new URL(apiBase);
-          if (!["http:", "https:"].includes(parsedUrl.protocol)) {
+          const parsed = new URL(candidate);
+          if (!["http:", "https:"].includes(parsed.protocol)) {
             throw new Error("Use an http or https service URL.");
           }
-          localStorage.setItem("gameGenreApiBase", apiBase);
-          await loadModelComparison();
-          if (connectionStatus.classList.contains("error")) {
-            localStorage.removeItem("gameGenreApiBase");
-          }
+          connectionStatus.classList.remove("error");
+          connectionStatus.textContent = "Connecting…";
+          await loadModelComparison(candidate);
         } catch (error) {
           connectionStatus.classList.add("error");
-          connectionStatus.textContent = error.message || "Enter a valid service URL.";
+          connectionStatus.textContent = error.message || "Could not connect to the API.";
         }
       });
 
+      techniqueSelect.addEventListener("change", updatePredictButton);
       document.querySelector("#metrics-table").addEventListener("click", (event) => {
         const button = event.target.closest("[data-technique]");
         if (!button) return;
         techniqueSelect.value = button.dataset.technique;
-        updatePredictionButton();
+        updatePredictButton();
         predictionForm.requestSubmit();
         document.querySelector("#predict-heading").scrollIntoView({
           behavior: "smooth",
@@ -810,14 +639,16 @@
       predictionForm.addEventListener("submit", async (event) => {
         event.preventDefault();
         predictionStatus.classList.remove("error");
-        predictionStatus.textContent = "Running selected model…";
+        predictionStatus.textContent = "Running model estimate…";
         const features = Object.fromEntries(
           [...new FormData(predictionForm)]
             .filter(([key]) => key !== "technique")
-            .map(([key, value]) => [key, Number(value)])
+            .map(([key, value]) => [
+              key,
+              numericFields.has(key) ? Number(value) : value,
+            ])
         );
         try {
-          requireApiConnection();
           const response = await fetch(apiUrl("/predict/classification"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -826,7 +657,7 @@
           const result = await response.json();
           if (!response.ok) {
             const detail = Array.isArray(result.detail)
-              ? result.detail.map((item) => item.msg).join(", ")
+              ? result.detail.map((item) => `${item.loc.at(-1)}: ${item.msg}`).join("; ")
               : result.detail;
             throw new Error(detail || "Prediction failed.");
           }
@@ -835,20 +666,26 @@
           for (const item of result.predictions) {
             const row = document.createElement("tr");
             addCell(row, item.name);
-            addCell(row, item.prediction);
-            addCell(row, item.metrics.f1_macro.toFixed(3));
-            addCell(row, item.metrics.balanced_accuracy.toFixed(3));
+            addCell(row, `${item.prediction} — ${classNames[String(item.prediction)]}`);
+            addCell(row, item.probability.toFixed(3));
+            const confidence = item.class_probabilities[String(item.prediction)];
+            addCell(row, confidence.toFixed(3));
             tableBody.append(row);
           }
           renderTechniqueAnalysis(result.predictions);
           predictionResults.hidden = false;
           predictionStatus.textContent = result.note;
         } catch (error) {
-          showError(predictionStatus, error);
+          predictionStatus.textContent = error.message || "Prediction failed.";
+          predictionStatus.classList.add("error");
         }
       });
 
-      loadModelComparison();
+      loadModelComparison().catch((error) => {
+        connectionStatus.classList.add("error");
+        connectionStatus.textContent = error.message || "Could not load API results.";
+        document.querySelector("#cv-badge").textContent = "Evaluation unavailable";
+      });
     </script>
   </body>
 </html>

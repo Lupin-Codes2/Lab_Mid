@@ -4,13 +4,13 @@ from typing import Any, Literal
 
 import joblib
 import numpy as np
-from fastapi import FastAPI, Query
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
-from game_ml.data import load_dataset
+from game_ml.data import FEATURE_COLUMNS, HeartDataset, load_dataset
 from game_ml.modeling import TECHNIQUES
 
 
@@ -18,7 +18,7 @@ ROOT_DIR = Path(__file__).resolve().parent
 MODEL_DIR = ROOT_DIR / "models"
 REPORT_DIR = ROOT_DIR / "reports"
 STATIC_DIR = ROOT_DIR / "static"
-DATASET_PATH = ROOT_DIR / "Top 1000 games of all time.csv"
+DATASET_PATH = ROOT_DIR / "heart.csv"
 REPORT_PATH = REPORT_DIR / "model_comparison.json"
 BRIEF_REPORT_PATH = REPORT_DIR / "lab_midterm_report.md"
 
@@ -27,7 +27,8 @@ def load_model_bundle(model_key: str) -> dict[str, Any]:
     model_path = MODEL_DIR / f"{model_key}.joblib"
     if not model_path.is_file():
         raise RuntimeError(
-            f"Model file not found: {model_path}. Run `python train_models.py` first."
+            f"Model file not found: {model_path}. Run `python train_models.py` "
+            "to generate the heart-disease models."
         )
     return joblib.load(model_path)
 
@@ -35,20 +36,21 @@ def load_model_bundle(model_key: str) -> dict[str, Any]:
 def load_comparison_report() -> dict[str, Any]:
     if not REPORT_PATH.is_file():
         raise RuntimeError(
-            f"Model report not found: {REPORT_PATH}. Run `python train_models.py` first."
+            f"Model report not found: {REPORT_PATH}. "
+            "Run `python train_models.py` to generate it."
         )
     with REPORT_PATH.open(encoding="utf-8") as report_file:
         return json.load(report_file)
 
 
-game_dataset = load_dataset(DATASET_PATH)
+heart_dataset: HeartDataset = load_dataset(DATASET_PATH)
 model_bundles = {
     model_key: load_model_bundle(model_key)
     for model_key in TECHNIQUES
 }
 comparison_report = load_comparison_report()
 
-app = FastAPI(title="Pre-Midterm Machine Learning Techniques", version="2.0.0")
+app = FastAPI(title="Heart Disease Classification Lab", version="3.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -63,14 +65,26 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
-class ClassificationFeatures(BaseModel):
-    ranking: int = Field(ge=1, le=1000)
-    year: int = Field(ge=1950, le=2030)
-    votes: int = Field(ge=0, le=10_000_000)
+class HeartFeatures(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    Age: int = Field(strict=True, ge=18, le=120)
+    Sex: Literal["F", "M"]
+    ChestPainType: Literal["ASY", "ATA", "NAP", "TA"]
+    RestingBP: int = Field(strict=True, ge=0, le=300)
+    Cholesterol: int = Field(strict=True, ge=0, le=1000)
+    FastingBS: Literal[0, 1]
+    RestingECG: Literal["LVH", "Normal", "ST"]
+    MaxHR: int = Field(strict=True, ge=1, le=250)
+    ExerciseAngina: Literal["N", "Y"]
+    Oldpeak: float = Field(ge=-10, le=20)
+    ST_Slope: Literal["Down", "Flat", "Up"]
 
 
 class ClassificationRequest(BaseModel):
-    features: ClassificationFeatures
+    model_config = ConfigDict(extra="forbid")
+
+    features: HeartFeatures
     technique: Literal[
         "all",
         "decision_tree",
@@ -91,33 +105,6 @@ def health() -> dict[str, str | int]:
     return {"status": "ok", "models_loaded": len(model_bundles)}
 
 
-@app.get("/games")
-def search_games(
-    query: str = Query(min_length=2, max_length=100),
-    limit: int = Query(default=10, ge=1, le=20),
-) -> list[dict[str, int | str]]:
-    search_term = query.strip().casefold()
-    if len(search_term) < 2:
-        return []
-
-    matches = []
-    for game in game_dataset.records:
-        if search_term not in game["name"].casefold():
-            continue
-        matches.append(
-            {
-                "name": game["name"],
-                "ranking": game["ranking"],
-                "year": game["year"],
-                "votes": game["votes"],
-                "genre": game["genre"],
-            }
-        )
-        if len(matches) >= limit:
-            break
-    return matches
-
-
 @app.get("/models")
 def get_model_comparison() -> dict[str, Any]:
     return comparison_report
@@ -125,6 +112,11 @@ def get_model_comparison() -> dict[str, Any]:
 
 @app.get("/report")
 def get_brief_report() -> FileResponse:
+    if not BRIEF_REPORT_PATH.is_file():
+        raise RuntimeError(
+            f"Project report not found: {BRIEF_REPORT_PATH}. "
+            "Run `python train_models.py` to generate it."
+        )
     return FileResponse(
         BRIEF_REPORT_PATH,
         media_type="text/markdown",
@@ -133,27 +125,43 @@ def get_brief_report() -> FileResponse:
 
 
 @app.post("/predict/classification")
-def predict_genres(request: ClassificationRequest) -> dict[str, Any]:
-    features = request.features
-    values = np.asarray(
-        [[features.ranking, features.year, features.votes]],
-        dtype=float,
-    )
-    predictions = []
+def predict_classification(request: ClassificationRequest) -> dict[str, Any]:
+    feature_data = request.features.model_dump()
+    feature_values: list[float | str] = [
+        feature_data[column] for column in FEATURE_COLUMNS
+    ]
+    for column in ("RestingBP", "Cholesterol"):
+        index = FEATURE_COLUMNS.index(column)
+        if feature_values[index] == 0:
+            feature_values[index] = float("nan")
+    values = np.asarray([feature_values], dtype=object)
     selected_models = (
         model_bundles.items()
         if request.technique == "all"
         else [(request.technique, model_bundles[request.technique])]
     )
+    predictions: list[dict[str, Any]] = []
     for model_key, bundle in selected_models:
         estimator = bundle["estimator"]
-        predicted_genre = str(estimator.predict(values)[0])
+        predicted_class = int(estimator.predict(values)[0])
+        class_probabilities = estimator.predict_proba(values)[0]
+        positive_index = list(estimator.classes_).index(1)
         predictions.append(
             {
                 "model": model_key,
                 "name": bundle["name"],
-                "prediction": predicted_genre,
+                "prediction": predicted_class,
+                "probability": float(class_probabilities[positive_index]),
+                "class_probabilities": {
+                    str(int(label)): float(probability)
+                    for label, probability in zip(
+                        estimator.classes_,
+                        class_probabilities,
+                    )
+                },
                 "metrics": bundle["metrics"],
+                "cross_validation_mean_std": bundle["cross_validation_mean_std"],
+                "confusion_matrix": bundle["confusion_matrix"],
                 "why_used": bundle["why_used"],
                 "tradeoff": bundle["tradeoff"],
                 "per_class_metrics": bundle["per_class_metrics"],
@@ -163,7 +171,7 @@ def predict_genres(request: ClassificationRequest) -> dict[str, Any]:
     return {
         "predictions": predictions,
         "note": (
-            "Predictions use ranking, release year, and votes only. "
-            "They are estimates, not reliable game metadata."
+            "Educational estimates only. This model is not validated for clinical "
+            "use and must not be used to diagnose or make treatment decisions."
         ),
     }
