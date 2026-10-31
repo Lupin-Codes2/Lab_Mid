@@ -50,6 +50,9 @@
       .connection-panel label { flex: 1; }
       .connection-panel .button { flex: 0 0 auto; }
       .connection-status { min-height: 1.3rem; margin: 0.55rem 0 0; font-size: 0.82rem; }
+      .api-url-hint { display: flex; align-items: center; flex-wrap: wrap; gap: 0.55rem; margin: 0.8rem 0 0; color: var(--muted); font-size: 0.82rem; }
+      .api-url-hint code { padding: 0.28rem 0.45rem; border: 1px solid var(--line); border-radius: 6px; background: #f5f7fb; color: var(--ink); }
+      .copy-api-button { padding: 0.35rem 0.6rem; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); background: white; font: inherit; font-weight: 650; cursor: pointer; }
 
       .panel {
         margin: 1rem 0;
@@ -267,6 +270,11 @@
           </label>
           <button id="connect-api" class="button" type="button">Connect API</button>
         </div>
+        <p class="api-url-hint">
+          Use this project API URL:
+          <code id="project-api-url">https://lab-mid.onrender.com</code>
+          <button id="copy-api-url" class="copy-api-button" type="button">Copy URL</button>
+        </p>
         <p id="connection-status" class="connection-status muted" aria-live="polite"></p>
       </section>
 
@@ -745,6 +753,20 @@
       });
 
       techniqueSelect.addEventListener("change", updatePredictionButton);
+
+      document.querySelector("#copy-api-url").addEventListener("click", async () => {
+        const apiUrl = document.querySelector("#project-api-url").textContent.trim();
+        apiBaseInput.value = apiUrl;
+        try {
+          await navigator.clipboard.writeText(apiUrl);
+          connectionStatus.classList.remove("error");
+          connectionStatus.textContent = "API URL copied and filled in above. Click Connect API.";
+        } catch (error) {
+          connectionStatus.classList.remove("error");
+          connectionStatus.textContent =
+            "API URL filled in above. Copy it manually if needed, then click Connect API.";
+        }
+      });
 
       document.querySelector("#connect-api").addEventListener("click", async () => {
         const apiBase = apiBaseInput.value.trim().replace(/\/+$/, "");
