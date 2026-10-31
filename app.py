@@ -5,6 +5,7 @@ from typing import Any, Literal
 import joblib
 import numpy as np
 from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -48,6 +49,17 @@ model_bundles = {
 comparison_report = load_comparison_report()
 
 app = FastAPI(title="Pre-Midterm Machine Learning Techniques", version="2.0.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://lupin-codes2.github.io",
+        "http://127.0.0.1:8000",
+        "http://localhost:8000",
+    ],
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
+)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 

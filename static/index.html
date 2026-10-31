@@ -46,6 +46,10 @@
       h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.045em; }
       .hero-copy { max-width: 650px; margin: 0.8rem 0 0; color: #d3daf0; line-height: 1.65; }
       main { padding: 1.35rem 1rem 4rem; }
+      .connection-panel { display: flex; align-items: flex-end; gap: 0.8rem; }
+      .connection-panel label { flex: 1; }
+      .connection-panel .button { flex: 0 0 auto; }
+      .connection-status { min-height: 1.3rem; margin: 0.55rem 0 0; font-size: 0.82rem; }
 
       .panel {
         margin: 1rem 0;
@@ -225,6 +229,7 @@
       @media (max-width: 540px) {
         .hero { padding-top: 1.5rem; }
         .section-heading, .toolbar, .run-row { align-items: stretch; flex-direction: column; }
+        .connection-panel { align-items: stretch; flex-direction: column; }
         .fields, .requirements-grid { grid-template-columns: 1fr; }
         .toolbar .technique-picker { width: 100%; }
         .run-row .button { width: 100%; }
@@ -245,6 +250,26 @@
     </header>
 
     <main>
+      <section id="connection-panel" class="panel" aria-labelledby="connection-heading">
+        <div class="section-heading">
+          <div>
+            <h2 id="connection-heading">Connect the prediction API</h2>
+            <p class="section-description">
+              GitHub Pages hosts this interface; connect the FastAPI service URL to load metrics,
+              search games, and run predictions.
+            </p>
+          </div>
+        </div>
+        <div class="connection-panel">
+          <label for="api-base-url">FastAPI service URL
+            <input id="api-base-url" type="url" inputmode="url"
+                   placeholder="https://your-service.onrender.com">
+          </label>
+          <button id="connect-api" class="button" type="button">Connect API</button>
+        </div>
+        <p id="connection-status" class="connection-status muted" aria-live="polite"></p>
+      </section>
+
       <section class="panel" aria-labelledby="data-heading">
         <div class="section-heading">
           <div>
@@ -427,9 +452,31 @@
       const techniqueSelect = document.querySelector("#technique-select");
       const predictionButton = document.querySelector("#predict-button");
       const predictionResults = document.querySelector("#prediction-results");
+      const apiBaseInput = document.querySelector("#api-base-url");
+      const connectionStatus = document.querySelector("#connection-status");
+      const isGithubPages = location.hostname.endsWith("github.io");
+      const savedApiBase = localStorage.getItem("gameGenreApiBase") || "";
+      apiBaseInput.value = savedApiBase;
       let searchTimer;
       let searchController;
       let modelReport;
+
+      function getApiBase() {
+        return (localStorage.getItem("gameGenreApiBase") || "").replace(/\/+$/, "");
+      }
+
+      function apiUrl(path) {
+        const base = getApiBase();
+        return base ? `${base}${path}` : path;
+      }
+
+      function requireApiConnection() {
+        if (isGithubPages && !getApiBase()) {
+          throw new Error(
+            "GitHub Pages only serves the interface. Deploy the Render Blueprint and connect its service URL above."
+          );
+        }
+      }
 
       function addCell(row, value) {
         const cell = document.createElement("td");
@@ -499,9 +546,14 @@
         const status = document.querySelector("#cv-badge");
         status.textContent = "Loading…";
         try {
-          const response = await fetch("/models");
+          requireApiConnection();
+          const response = await fetch(apiUrl("/models"));
           if (!response.ok) throw new Error("Model evaluation is unavailable.");
           modelReport = await response.json();
+          connectionStatus.classList.remove("error");
+          connectionStatus.textContent = `Connected to ${getApiBase() || location.origin}.`;
+          const reportLink = document.querySelector(".report-link");
+          reportLink.href = apiUrl("/report");
           const audit = modelReport.dataset;
 
           const datasetSummary = document.querySelector("#dataset-summary");
@@ -533,6 +585,7 @@
           }
 
           const genreCounts = document.querySelector("#genre-counts");
+          genreCounts.replaceChildren();
           for (const [genre, count] of Object.entries(audit.grouped_genre_counts)) {
             const tag = document.createElement("span");
             tag.className = "tag";
@@ -550,6 +603,8 @@
             ...result,
           }));
           const tableBody = document.querySelector("#metrics-table tbody");
+          tableBody.replaceChildren();
+          techniqueSelect.replaceChildren(techniqueSelect.querySelector('option[value="all"]'));
           const baselineRow = makeTableRow(
             modelReport.baseline.name,
             modelReport.baseline.out_of_fold_metrics,
@@ -586,6 +641,9 @@
         } catch (error) {
           status.textContent = "Evaluation unavailable";
           status.classList.add("error");
+          connectionStatus.classList.add("error");
+          connectionStatus.textContent = error.message ||
+            "Could not connect to the API. Check the service URL and CORS settings.";
           showError(predictionStatus, error);
         }
       }
@@ -657,7 +715,7 @@
           searchController = new AbortController();
           try {
             const response = await fetch(
-              `/games?query=${encodeURIComponent(query)}`,
+                apiUrl(`/games?query=${encodeURIComponent(query)}`),
               { signal: searchController.signal }
             );
             if (!response.ok) throw new Error("Game search is unavailable.");
@@ -688,6 +746,33 @@
 
       techniqueSelect.addEventListener("change", updatePredictionButton);
 
+      document.querySelector("#connect-api").addEventListener("click", async () => {
+        const apiBase = apiBaseInput.value.trim().replace(/\/+$/, "");
+        if (!apiBase) {
+          localStorage.removeItem("gameGenreApiBase");
+          connectionStatus.classList.remove("error");
+          connectionStatus.textContent = isGithubPages
+            ? "Enter the FastAPI service URL from your Render dashboard."
+            : "Using the API served by this site.";
+          if (!isGithubPages) await loadModelComparison();
+          return;
+        }
+        try {
+          const parsedUrl = new URL(apiBase);
+          if (!["http:", "https:"].includes(parsedUrl.protocol)) {
+            throw new Error("Use an http or https service URL.");
+          }
+          localStorage.setItem("gameGenreApiBase", apiBase);
+          await loadModelComparison();
+          if (connectionStatus.classList.contains("error")) {
+            localStorage.removeItem("gameGenreApiBase");
+          }
+        } catch (error) {
+          connectionStatus.classList.add("error");
+          connectionStatus.textContent = error.message || "Enter a valid service URL.";
+        }
+      });
+
       document.querySelector("#metrics-table").addEventListener("click", (event) => {
         const button = event.target.closest("[data-technique]");
         if (!button) return;
@@ -710,7 +795,8 @@
             .map(([key, value]) => [key, Number(value)])
         );
         try {
-          const response = await fetch("/predict/classification", {
+          requireApiConnection();
+          const response = await fetch(apiUrl("/predict/classification"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ features, technique: techniqueSelect.value }),

@@ -99,6 +99,15 @@ Python backend.
 The Blueprint uses Render's free web-service plan. Free services can spin down while idle, so
 the first visit after inactivity may take a little longer to respond.
 
+## Optional: GitHub Pages frontend
+
+The root `index.html` redirects Pages visitors to `static/index.html`. Pages cannot run
+FastAPI, so deploy the Render Blueprint above first. Then visit the GitHub Pages site, enter
+the Render service's `https://...onrender.com` URL in **Connect the prediction API**, and
+select **Connect API**. The chosen URL is stored in that browser. The FastAPI CORS policy
+allows the `Lupin-Codes2` Pages origin. Alternatively, use the Render service URL directly;
+that serves the GUI and API together without a separate Pages connection.
+
 Model binaries, virtual environments, caches, and course PDFs are excluded from Git. The CSV
 remains in the repository because deployment training and game search require it. Confirm you
 have permission to redistribute the dataset before making the repository public. The prediction
