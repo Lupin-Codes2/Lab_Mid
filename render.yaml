@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: lab-midterm-ml-project
+    runtime: python
+    plan: free
+    region: singapore
+    branch: main
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.5
+    buildCommand: pip install -r requirements.txt && python train_models.py
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
